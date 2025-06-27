@@ -3,13 +3,42 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Star, ArrowLeft } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Login = () => {
-  const [userRole, setUserRole] = useState("");
+  const { signIn, user, loading } = useAuth();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Redirect if already logged in
+  if (user && !loading) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
+    const { error } = await signIn(email, password);
+    
+    if (!error) {
+      // Navigation will be handled by the auth context
+    }
+    setIsSubmitting(false);
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
@@ -37,71 +66,52 @@ const Login = () => {
               Acesse sua conta e continue construindo seu futuro
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input 
-                id="email" 
-                type="email" 
-                placeholder="seu@email.com"
-                required 
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="password">Senha</Label>
-              <Input 
-                id="password" 
-                type="password" 
-                placeholder="••••••••"
-                required 
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="role">Eu sou...</Label>
-              <Select value={userRole} onValueChange={setUserRole}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione seu perfil" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="student">
-                    <div className="flex items-center space-x-2">
-                      <span>🎓</span>
-                      <span>Estudante</span>
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="company">
-                    <div className="flex items-center space-x-2">
-                      <span>🏢</span>
-                      <span>Empresa</span>
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="school">
-                    <div className="flex items-center space-x-2">
-                      <span>🏫</span>
-                      <span>Instituição de Ensino</span>
-                    </div>
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <Button className="w-full bg-blue-600 hover:bg-blue-700">
-              Entrar
-            </Button>
-
-            <div className="text-center space-y-2">
-              <a href="#" className="text-sm text-blue-600 hover:text-blue-700">
-                Esqueci minha senha
-              </a>
-              <div className="text-sm text-gray-600">
-                Não tem uma conta?{" "}
-                <Link to="/cadastro" className="text-blue-600 hover:text-blue-700 font-medium">
-                  Cadastre-se aqui
-                </Link>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input 
+                  id="email" 
+                  type="email" 
+                  placeholder="seu@email.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required 
+                />
               </div>
-            </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="password">Senha</Label>
+                <Input 
+                  id="password" 
+                  type="password" 
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required 
+                />
+              </div>
+
+              <Button 
+                type="submit" 
+                className="w-full bg-blue-600 hover:bg-blue-700"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? "Entrando..." : "Entrar"}
+              </Button>
+
+              <div className="text-center space-y-2">
+                <a href="#" className="text-sm text-blue-600 hover:text-blue-700">
+                  Esqueci minha senha
+                </a>
+                <div className="text-sm text-gray-600">
+                  Não tem uma conta?{" "}
+                  <Link to="/cadastro" className="text-blue-600 hover:text-blue-700 font-medium">
+                    Cadastre-se aqui
+                  </Link>
+                </div>
+              </div>
+            </form>
           </CardContent>
         </Card>
       </div>

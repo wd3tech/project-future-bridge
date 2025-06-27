@@ -1,4 +1,5 @@
 
+import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -10,60 +11,31 @@ import {
   TrendingUp, 
   Plus, 
   Eye,
-  Users,
-  Building2,
-  GraduationCap,
-  Star
+  Star,
+  LogOut
 } from "lucide-react";
+import { Navigate } from "react-router-dom";
 
 const Dashboard = () => {
-  // Simular dados do usuário - em produção viria do Supabase
-  const userRole = "student"; // pode ser "student", "company" ou "school"
-  const userName = "Ana Silva";
+  const { user, signOut, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
 
   const studentStats = [
-    { label: "Projetos no Portfólio", value: "12", icon: FolderOpen },
-    { label: "Visualizações do Perfil", value: "48", icon: Eye },
-    { label: "Candidaturas Enviadas", value: "8", icon: Briefcase },
-    { label: "Taxa de Resposta", value: "75%", icon: TrendingUp }
-  ];
-
-  const recentProjects = [
-    {
-      title: "Sistema de Vendas Online",
-      skills: ["React", "Node.js", "MySQL"],
-      validated: true,
-      views: 23
-    },
-    {
-      title: "App Mobile de Delivery",
-      skills: ["React Native", "Firebase"],
-      validated: false,
-      views: 15
-    },
-    {
-      title: "Dashboard Analítico",
-      skills: ["Python", "Streamlit", "Pandas"],
-      validated: true,
-      views: 31
-    }
-  ];
-
-  const recentOpportunities = [
-    {
-      title: "Estágio em Desenvolvimento Web",
-      company: "TechSoft Solutions",
-      location: "Sorocaba, SP",
-      type: "Estágio",
-      posted: "2 dias atrás"
-    },
-    {
-      title: "Jovem Aprendiz - Design",
-      company: "Criativa Marketing",
-      location: "Sorocaba, SP", 
-      type: "Jovem Aprendiz",
-      posted: "1 semana atrás"
-    }
+    { label: "Projetos no Portfólio", value: "0", icon: FolderOpen },
+    { label: "Visualizações do Perfil", value: "0", icon: Eye },
+    { label: "Candidaturas Enviadas", value: "0", icon: Briefcase },
+    { label: "Taxa de Resposta", value: "0%", icon: TrendingUp }
   ];
 
   return (
@@ -78,7 +50,11 @@ const Dashboard = () => {
             <h1 className="text-2xl font-bold text-blue-600">Portfólio Futuro</h1>
           </div>
           <div className="flex items-center space-x-4">
-            <span className="text-gray-600">Olá, {userName}!</span>
+            <span className="text-gray-600">Olá, {user.user_metadata?.name || user.email}!</span>
+            <Button variant="ghost" size="sm" onClick={signOut}>
+              <LogOut className="w-4 h-4 mr-2" />
+              Sair
+            </Button>
             <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
               <User className="w-5 h-5 text-blue-600" />
             </div>
@@ -95,6 +71,9 @@ const Dashboard = () => {
           <p className="text-gray-600">
             Aqui você pode acompanhar seu progresso e gerenciar suas atividades.
           </p>
+          <Badge variant="secondary" className="mt-2">
+            {user.user_metadata?.role || 'STUDENT'}
+          </Badge>
         </div>
 
         {/* Stats Cards */}
@@ -109,8 +88,8 @@ const Dashboard = () => {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-gray-900">{stat.value}</div>
-                <p className="text-xs text-green-600 mt-1">
-                  +12% em relação ao mês passado
+                <p className="text-xs text-gray-500 mt-1">
+                  Bem-vindo à plataforma!
                 </p>
               </CardContent>
             </Card>
@@ -120,41 +99,41 @@ const Dashboard = () => {
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Portfolio Progress */}
+            {/* Getting Started */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
-                  <span>Progresso do Portfólio</span>
-                  <Badge variant="secondary">75% Completo</Badge>
+                  <span>Primeiros Passos</span>
+                  <Badge variant="secondary">Novo</Badge>
                 </CardTitle>
                 <CardDescription>
-                  Continue adicionando projetos para aumentar sua visibilidade
+                  Complete seu perfil para começar a usar a plataforma
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Progress value={75} className="mb-4" />
+                <Progress value={25} className="mb-4" />
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Projetos adicionados</span>
-                    <span className="font-medium">12/15</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Habilidades cadastradas</span>
-                    <span className="font-medium">8/10</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Bio completa</span>
+                    <span className="text-gray-600">Conta criada</span>
                     <span className="font-medium text-green-600">✓</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Perfil completo</span>
+                    <span className="font-medium">Pendente</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Primeiro projeto</span>
+                    <span className="font-medium">Pendente</span>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Recent Projects */}
+            {/* No Projects Yet */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
-                  <span>Meus Projetos Recentes</span>
+                  <span>Seus Projetos</span>
                   <Button size="sm">
                     <Plus className="w-4 h-4 mr-2" />
                     Novo Projeto
@@ -162,36 +141,18 @@ const Dashboard = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {recentProjects.map((project, index) => (
-                    <div key={index} className="border rounded-lg p-4 hover:bg-gray-50">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center space-x-2 mb-2">
-                            <h4 className="font-semibold text-gray-900">{project.title}</h4>
-                            {project.validated && (
-                              <Badge variant="secondary" className="bg-green-100 text-green-800">
-                                ✓ Validado
-                              </Badge>
-                            )}
-                          </div>
-                          <div className="flex flex-wrap gap-2 mb-2">
-                            {project.skills.map((skill, skillIndex) => (
-                              <Badge key={skillIndex} variant="outline" className="text-xs">
-                                {skill}
-                              </Badge>
-                            ))}
-                          </div>
-                          <p className="text-sm text-gray-600">
-                            {project.views} visualizações
-                          </p>
-                        </div>
-                        <Button variant="ghost" size="sm">
-                          <Eye className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
+                <div className="text-center py-8">
+                  <FolderOpen className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    Nenhum projeto ainda
+                  </h3>
+                  <p className="text-gray-600 mb-4">
+                    Comece criando seu primeiro projeto para mostrar suas habilidades
+                  </p>
+                  <Button>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Criar Primeiro Projeto
+                  </Button>
                 </div>
               </CardContent>
             </Card>
@@ -220,35 +181,31 @@ const Dashboard = () => {
               </CardContent>
             </Card>
 
-            {/* Recent Opportunities */}
+            {/* Tips */}
             <Card>
               <CardHeader>
-                <CardTitle>Oportunidades para Você</CardTitle>
-                <CardDescription>
-                  Baseado no seu perfil e habilidades
-                </CardDescription>
+                <CardTitle>Dicas para começar</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {recentOpportunities.map((opportunity, index) => (
-                    <div key={index} className="border rounded-lg p-3">
-                      <h5 className="font-semibold text-sm text-gray-900 mb-1">
-                        {opportunity.title}
-                      </h5>
-                      <p className="text-sm text-gray-600 mb-2">
-                        {opportunity.company}
-                      </p>
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="text-gray-500">{opportunity.location}</span>
-                        <Badge variant="outline" className="text-xs">
-                          {opportunity.type}
-                        </Badge>
-                      </div>
-                      <Button size="sm" className="w-full mt-3">
-                        Ver Detalhes
-                      </Button>
-                    </div>
-                  ))}
+                <div className="space-y-4 text-sm">
+                  <div className="border-l-4 border-blue-500 pl-3">
+                    <p className="font-medium">Complete seu perfil</p>
+                    <p className="text-gray-600">
+                      Adicione uma bio e suas informações pessoais
+                    </p>
+                  </div>
+                  <div className="border-l-4 border-green-500 pl-3">
+                    <p className="font-medium">Crie seu primeiro projeto</p>
+                    <p className="text-gray-600">
+                      Mostre suas habilidades com projetos reais
+                    </p>
+                  </div>
+                  <div className="border-l-4 border-purple-500 pl-3">
+                    <p className="font-medium">Explore oportunidades</p>
+                    <p className="text-gray-600">
+                      Procure por vagas que combinam com você
+                    </p>
+                  </div>
                 </div>
               </CardContent>
             </Card>
