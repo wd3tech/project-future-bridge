@@ -69,7 +69,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLoading(true);
       const redirectUrl = `${window.location.origin}/`;
       
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -98,6 +98,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           variant: "destructive",
         });
       } else {
+        console.log('Sign up successful:', data);
+        
+        // Create the profile manually after successful signup
+        if (data.user) {
+          await createUserProfile(data.user.id, userData);
+        }
+        
         toast({
           title: "Cadastro realizado!",
           description: "Verifique seu email para confirmar a conta.",
@@ -110,6 +117,57 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return { error: err };
     } finally {
       setLoading(false);
+    }
+  };
+
+  const createUserProfile = async (userId: string, userData: SignUpData) => {
+    try {
+      // Create main profile
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .insert({
+          user_id: userId,
+          name: userData.name,
+          role: userData.role
+        });
+
+      if (profileError) {
+        console.error('Profile creation error:', profileError);
+        return;
+      }
+
+      // Create specific profile based on role
+      if (userData.role === 'STUDENT') {
+        await supabase
+          .from('student_profiles')
+          .insert({
+            user_id: userId,
+            bio: userData.bio
+          });
+      } else if (userData.role === 'COMPANY') {
+        await supabase
+          .from('company_profiles')
+          .insert({
+            user_id: userId,
+            company_name: userData.companyName || userData.name,
+            description: userData.description,
+            sector: userData.sector,
+            city: userData.city || '',
+            state: userData.state || 'SP'
+          });
+      } else if (userData.role === 'SCHOOL_ADMIN') {
+        await supabase
+          .from('school_profiles')
+          .insert({
+            user_id: userId,
+            city: userData.schoolCity || userData.city || '',
+            state: userData.state || 'SP',
+            about: userData.description,
+            website: userData.website
+          });
+      }
+    } catch (err) {
+      console.error('Error creating user profile:', err);
     }
   };
 
